@@ -1,23 +1,18 @@
 # Make file to install flexiblas via spack on docker 
 
-v304:
-	docker build -f Dockerfile --build-arg FLEXIBLAS_VERSION=3.0.4 -t flexiblas:3.0.4 .
+v1.9.3:
+	docker build -f Dockerfile --build-arg ATLAB_VERSION=1.9.3 -t bigdft-atlab:1.9.3 .
+	
+v1.9.2:
+	docker build -f Dockerfile --build-arg ATLAB_VERSION=1.9.2 -t bigdft-atlab:1.9.2 .
+	
+v1.9.1:
+	docker build -f Dockerfile --build-arg ATLAB_VERSION=1.9.1 -t bigdft-atlab:1.9.1 .
 
-v313:
-	docker build -f Dockerfile --build-arg FLEXIBLAS_VERSION=3.1.3 -t flexiblas:3.1.3 .
 
-v320:
-	docker build -f Dockerfile --build-arg FLEXIBLAS_VERSION=3.2.0 -t flexiblas:3.2.0 .
-
-v321:
-	docker build -f Dockerfile --build-arg FLEXIBLAS_VERSION=3.2.1 -t flexiblas:3.2.1 .
-
-v330:
-	docker build -f Dockerfile --build-arg FLEXIBLAS_VERSION=3.3.0 -t flexiblas:3.3.0 .
-
-.PHONY: v304 v313 v320 v321 v330
+.PHONY: v1.9.3, 1.9.2, 1.9.3
 
 diff:
 	@echo "Compare (diff) spack/package.py with current package.py from spack develop"
-	wget --output-document=spack/package-upstream.py https://raw.githubusercontent.com/spack/spack/develop/var/spack/repos/builtin/packages/flexiblas/package.py
+	wget --output-document=spack/package-upstream.py https://raw.githubusercontent.com/spack/spack/develop/var/spack/repos/builtin/packages/bigdft-atlab/package.py
 	diff spack/package-upstream.py spack/package.py || true
