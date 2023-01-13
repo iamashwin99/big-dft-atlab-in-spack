@@ -1,4 +1,4 @@
-name: v330
+name: v1.9.3
 
 on:
   push:
@@ -16,5 +16,5 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: make v330
+      run: make v1.9.3
       
