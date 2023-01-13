@@ -24,6 +24,7 @@ RUN apt-get -y update
 # install minimal spack dependencies
 RUN apt-get install -y --no-install-recommends \
               autoconf \
+              automake \
               build-essential \
               ca-certificates \
               coreutils \
