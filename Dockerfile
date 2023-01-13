@@ -4,7 +4,7 @@ FROM debian:bullseye
 # # but other strings can be given to the docker build command
 # # (for example docker build --build-arg SPACK_VERSION=v0.16.2)
 ARG SPACK_VERSION=releases/v0.18
-ARG FLEXIBLAS_VERSION=3.0.4
+ARG ATLAB_VERSION=1.9.3
 RUN echo "Building with spack version ${SPACK_VERSION}"
 
 # Any extra packages to be installed in the host
@@ -55,22 +55,21 @@ RUN cd spack && git checkout $SPACK_VERSION
 RUN $SPACK --version
 
 # copy our package.py into the spack tree
-COPY spack/package.py $SPACK_ROOT/var/spack/repos/builtin/packages/flexiblas/package.py
-RUN ls -l $SPACK_ROOT/var/spack/repos/builtin/packages/flexiblas
+COPY spack/package.py $SPACK_ROOT/var/spack/repos/builtin/packages/bigdft-atlab/package.py
+RUN ls -l $SPACK_ROOT/var/spack/repos/builtin/packages/bigdft-atlab
 
-# Install and test flexiblas via spack
+# Install and test bigdft-atlab via spack
 
 RUN . $SPACK_ROOT/share/spack/setup-env.sh && \
       # display specs of upcoming spack installation:
-      spack spec flexiblas@${FLEXIBLAS_VERSION} && \
+      spack spec bigdft-atlab@${ATLAB_VERSION} && \
       # run the spack installation (adding it to the environment):
-      spack install flexiblas@${FLEXIBLAS_VERSION} && \
-      # run spack smoke tests for flexiblas. We get an error if any of the fails:
-      spack test run --alias test_serial flexiblas && \
+      spack install bigdft-atlab@${ATLAB_VERSION} && \
+      # run spack smoke tests for bigdft-atlab. We get an error if any of the fails:
+      spack test run --alias test_serial bigdft-atlab && \
       # display output from smoke tests (just for information):
-      spack test results -l test_serial && \
-      # show which flexiblas version we use (for convenience):
-      spack load flexiblas && flexiblas --version
+      spack test results -l test_serial
+
 
 
 # Provide bash in case the image is meant to be used interactively
