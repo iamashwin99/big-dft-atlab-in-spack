@@ -1,4 +1,4 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -6,19 +6,77 @@
 from spack.package import *
 
 
-class Flexiblas(CMakePackage):
-    """A BLAS and LAPACK wrapper library with runtime exchangable backends"""
+class BigdftAtlab(AutotoolsPackage):
+    """BigDFT-atlab: library for ATomic related operations."""
 
-    homepage = "https://www.mpi-magdeburg.mpg.de/projects/flexiblas"
-    url = "https://csc.mpi-magdeburg.mpg.de/mpcsc/software/flexiblas/flexiblas-3.0.3.tar.gz"
+    homepage = "https://bigdft.org/"
+    url = "https://gitlab.com/l_sim/bigdft-suite/-/archive/1.9.2/bigdft-suite-1.9.2.tar.gz"
+    git = "https://gitlab.com/l_sim/bigdft-suite.git"
 
-    version("3.3.0", sha256="2696cd63d69b9a007f40f1f4a1ed83ad2fc46f6a930a22753bd221758c503ea2")
-    version("3.2.1", sha256="5be7e508e2dbb751b3bf372639d8e82a11f79e9ef6cbf243b64981c24a5703cf")
-    version("3.2.0", sha256="a3f4d66a30b6fa6473e492de86d34abc5f9d4e69d4d91ba23618388e8df05904")
-    version("3.1.3", sha256="aac6175660e8475ce478b88673eee330671f8aecc0cb852a25833e23e29a0620")
-    version("3.0.4", sha256="50a88f2e88994dda91b2a2621850afd9654b3b84820e737e335687a46751be5c")
-    version("3.0.3", sha256="926ab31cf56f0618aec34da85314f3b48b6deb661b4e9d6e6a99dc37872b5341")
+    version("develop", branch="devel")
+    version("1.9.3", sha256="f5f3da95d7552219f94366b4d2a524b2beac988fb2921673a65a128f9a8f0489")
+    version("1.9.2", sha256="dc9e49b68f122a9886fa0ef09970f62e7ba21bb9ab1b86be9b7d7e22ed8fbe0f")
+    version("1.9.1", sha256="3c334da26d2a201b572579fc1a7f8caad1cbf971e848a3e10d83bc4dc8c82e41")
+    version("1.9.0", sha256="4500e505f5a29d213f678a91d00a10fef9dc00860ea4b3edf9280f33ed0d1ac8")
 
-    # virtual dependency
-    provides("blas")
-    provides("lapack")
+    depends_on("autoconf", type="build")
+    depends_on("automake", type="build")
+    depends_on("libtool", type="build")
+
+    variant("mpi", default=True, description="Enable MPI support")
+    variant("openmp", default=True, description="Enable OpenMP support")
+    variant("openbabel", default=False, description="Enable detection of openbabel compilation")
+
+    depends_on("mpi", when="+mpi")
+    depends_on("openbabel", when="+openbabel")
+
+    for vers in ["1.9.0", "1.9.1", "1.9.2", "1.9.3", "develop"]:
+        depends_on("bigdft-futile@{0}".format(vers), when="@{0}".format(vers))
+
+    configure_directory = "atlab"
+
+    def configure_args(self):
+        spec = self.spec
+        prefix = self.prefix
+
+        fcflags = []
+        if "+openmp" in spec:
+            fcflags.append(self.compiler.openmp_flag)
+
+        if self.spec.satisfies("%gcc@10:"):
+            fcflags.append("-fallow-argument-mismatch")
+
+        args = [
+            "FCFLAGS=%s" % " ".join(fcflags),
+            "--with-futile-libs=%s" % spec["bigdft-futile"].libs.ld_flags,
+            "--with-futile-incs=%s" % spec["bigdft-futile"].headers.include_flags+"/futile",
+            "--with-moduledir=%s" % prefix.include,
+            "--prefix=%s" % prefix,
+            "--without-etsf-io",
+        ]
+
+        if "+mpi" in spec:
+            args.append("CC=%s " % spec["mpi"].mpicc)
+            args.append("CXX=%s" % spec["mpi"].mpicxx)
+            args.append("FC=%s" % spec["mpi"].mpifc)
+            args.append("F90=%s" % spec["mpi"].mpifc)
+            args.append("F77=%s" % spec["mpi"].mpif77)
+        else:
+            args.append("--disable-mpi")
+
+        if "+openmp" in spec:
+            args.append("--with-openmp")
+        else:
+            args.append("--without-openmp")
+
+        if "+openbabel" in spec:
+            args.append("--enable-openbabel")
+            args.append("--with-openbabel-libs=%s" % spec["openbabel"].prefix.lib)
+            args.append("--with-openbabel-incs=%s" % spec["openbabel"].prefix.include)
+
+        return args
+
+    @property
+    def libs(self):
+        shared = "+shared" in self.spec
+        return find_libraries("libatlab-*", root=self.prefix, shared=shared, recursive=True)
