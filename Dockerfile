@@ -57,6 +57,7 @@ RUN $SPACK --version
 
 # copy our package.py into the spack tree
 COPY spack/package.py $SPACK_ROOT/var/spack/repos/builtin/packages/bigdft-atlab/package.py
+RUN cat $SPACK_ROOT/var/spack/repos/builtin/packages/bigdft-atlab/package.py
 RUN ls -l $SPACK_ROOT/var/spack/repos/builtin/packages/bigdft-atlab
 
 # Install and test bigdft-atlab via spack
